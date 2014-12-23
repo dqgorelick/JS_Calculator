@@ -1,17 +1,78 @@
 var keys = document.querySelectorAll('#container span');
 var operators = ['+','-','x','÷'];
 var decimal = false;
+var input = document.querySelector('#inputbox');
+var inputVal = document.getElementById('inputbox').innerHTML;
+// var mice = {'=':['enter','=']}
+// var mice = ['c','shift+c','C','=','enter','x','shift-x','X','÷','/','-','+','p','0','1','2','3','4','5','6','7','8','9','.'];
 
-Mousetrap.bind(['ctrl+s', 'meta+s'], function(e) {});
+var keyCommands = {
+	'C': 'C',
+	'shift+c': 'C',
+	'c': 'C',
+	'del':'C',
+	'backspace':'C',
+	'enter':'=',
+	'=':'=',
+	'shift+x':'*',
+	'x':'*',
+	'X':'*',
+	'*':'*',
+	'÷':'/',
+	'/':'/',
+	'-':'-',
+	'+':'+',
+	'p':'+',
+	'0':'0',
+	'1':'1',
+	'2':'2',
+	'3':'3',
+	'4':'4',
+	'5':'5',
+	'6':'6',
+	'7':'7',
+	'8':'8',
+	'9':'9',
+	'.':'.'
+};
 
+//ignore browser back function
+window.onkeydown = function() {
+    var key = event.keyCode || event.charCode;
+    if( key == 8 || key == 46 ){
+        return false;
+    }
+};
+
+var bindKey = function (keyPress, command) {
+	var $selected = $("[button-data='" + command + "']");
+	Mousetrap.bind(keyPress, function(e) {
+		$selected.removeClass("active");
+		$selected.addClass("active");
+	});
+	Mousetrap.bind(keyPress, function(e) {
+		evaluate(command);
+		$selected.removeClass("active");
+		console.log(keyPress + " = " + command);
+	}, 'keyup');
+}
+
+//Calls mousetrap
+for(var key in keyCommands) {
+	bindKey(key, keyCommands[key]);
+}
 
 for(var i=0;i<keys.length; i++){
 	keys[i].onclick = function(e){
-
-	var input = document.querySelector('.inputbox');
-	var inputVal = input.innerHTML;
 	var btnVal = this.innerHTML;
+	evaluate(btnVal);
+	e.preventDefault();
+	}
 
+var evaluate = function (btnVal)
+{
+	var equation = document.getElementById('inputbox').innerHTML;
+	var lastChar = equation[equation.length-1];
 	if(btnVal == 'C')
 	{
 		input.innerHTML = '';
@@ -19,49 +80,34 @@ for(var i=0;i<keys.length; i++){
 	}
 
 	else if(btnVal=='='){
-		var lastChar = inputVal[inputVal.length-1];
-		var equation = inputVal;
 		equation = equation.replace(/x/g,'*').replace(/÷/g,'/');
 
 		if(operators.indexOf(lastChar) > -1 || lastChar == '.')
 			equation = equation.replace(/.$/,'');
 
 		if(equation)
-			//don't get used to using
-			input.innerHTML = eval(equation);
+		input.innerHTML = eval(equation);
 	}	
-
-	else if(operators.indexOf(btnVal) > -1)
+	else if(btnVal=='.')
 	{
-		var lastChar = inputVal[inputVal.length-1];
-		if(inputVal != '' && operators.indexOf(lastChar)==-1)
+		if(equation == '' || operators.indexOf(lastChar) > -1)
 		{
-			input.innerHTML+=btnVal;
-			decimal = false;
+			input.innerHTML += '0.';
 		}
-		else if(inputVal == '' && btnVal == '-')
-			{
-				input.innerHTML+=btnVal;
-			}
 	}
-
-	else if(btnVal =='.')
+	else if(operators.indexOf(btnVal)>-1)
 	{
-		var lastChar = inputVal[inputVal.length-1];
-		if(!decimal && (inputVal == '' || operators.indexOf(lastChar) > -1))
+		if(equation == '' && btnVal == '-')
 		{
-			decimal = true;
-			input.innerHTML+='0.';
+			input.innerHTML += '-';
 		}
-		if(!decimal)
+		else if(operators.indexOf(lastChar) == -1 && equation!='')
 		{
-			decimal = true;
-			input.innerHTML+='.';
+			input.innerHTML += btnVal;
 		}
 	}
 	else{
 		input.innerHTML += btnVal;
 	}		
-	e.preventDefault();
-	}
+};
 }
